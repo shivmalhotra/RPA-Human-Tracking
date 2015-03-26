@@ -1,0 +1,22 @@
+Completed Tasks
+- ground detection - sam
+- people detection - from tutorial
+- trajectory class - sam
+- person class (containing trajectory, color, id) - sam
+- function to compute velocity based on positions and delta time - shiv
+- basic matching of person clusters from current iteration to previous iteration using color and distance - sam
+- helper function to convert rgb color to hsv color - sam, shiv
+- get label maker to label kinects
+- ask for a third kinect
+
+Assigned Tasks
+- video recording and compression - sagar
+- recording info to file and editing condition of main loop - shiv
+- fix helper function that computes color of each person - shiv
+- continue working on matching people - sam
+- look into iterative closest point algorithm - sam
+
+Tasks for Later
+- match trajectory information to video information (?)
+- come up with places to put the kinect to record info
+
