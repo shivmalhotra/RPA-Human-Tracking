@@ -101,7 +101,7 @@ struct callback_args{
 }; 
 
 void calcAvgColor (pcl::PointCloud<PointT>::Ptr cloud, pcl::people::PersonCluster<PointT>* pc, Point* color) {
-  float r_avg = 0.0f, g_avg = 0.0f, b_avg = 0.0f;
+  float h_avg = 0.0f, s_avg = 0.0f, v_avg = 0.0f;
 	float total = 0.0f;		
     for (std::vector<int>::const_iterator pit = pc->getIndices().indices.begin(); pit != pc->getIndices().indices.end(); pit++){
     	PointT* p = &cloud->points[*pit];
@@ -110,19 +110,21 @@ void calcAvgColor (pcl::PointCloud<PointT>::Ptr cloud, pcl::people::PersonCluste
       uint8_t r = (rgb >> 16) & 0x0000ff;
       uint8_t g = (rgb >> 8)  & 0x0000ff;
       uint8_t b = (rgb)       & 0x0000ff;
-            
-      r_avg += (int)r;
-			g_avg += (int)g;
-			b_avg += (int)b;      
+      
+      Macros::RGBtoHSV(((int)r/255.0f), ((int)g/255.0f), ((int)b/255.0f), color);
+
+      h_avg += color->x;
+			s_avg += color->y;
+			v_avg += color->z;      
     		
     	total++;
     }
 
-    r_avg = (r_avg / total);
-    g_avg = (g_avg / total);
-    b_avg = (b_avg / total);
+    h_avg = (h_avg / total);
+    s_avg = (s_avg / total);
+    v_avg = (v_avg / total);
 	
-    Macros::RGBtoHSV((r_avg/255.0f), (g_avg/255.0f), (b_avg/255.0f), color);
+    
 }
 
 int main (int argc, char** argv)
