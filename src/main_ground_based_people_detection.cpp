@@ -124,7 +124,9 @@ void calcAvgColor (pcl::PointCloud<PointT>::Ptr cloud, pcl::people::PersonCluste
     s_avg = (s_avg / total);
     v_avg = (v_avg / total);
 	
-    
+    color->x = h_avg;
+    color->y = s_avg;
+    color->z = v_avg;
 }
 
 int main (int argc, char** argv)
