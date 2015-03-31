@@ -365,9 +365,9 @@ int main (int argc, char** argv)
 			
 		}
 
-		myfile.open("data.txt", std::ios_base::app);
-		myfile << " " <<std::endl;
-		myfile.close();
+		//myfile.open("data.txt", std::ios_base::app);
+		//myfile << " " <<std::endl;
+		//myfile.close();
 
 		// Handle new people entering the Kinect's range
 		// For each unmatched PersonCluster, add a new Person to people
