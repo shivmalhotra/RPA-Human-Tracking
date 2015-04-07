@@ -274,7 +274,7 @@ int main (int argc, char** argv)
           it->drawTBoundingBox(viewer, k);
           k++;
 			
-			Eigen::Vector3f& center = it->getTCenter(); 
+			//Eigen::Vector3f& center = it->getTCenter(); 
 			
 			//myfile.open("data_clusters.txt", std::ios_base::app);
 			//myfile << " x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
@@ -309,7 +309,7 @@ int main (int argc, char** argv)
 		// Match the PersonClusters in the current iteration to the people from the previous iteration
 		for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();) {			
 			Person* person = (*pIter);
-			Point* p1 = person->getTrajectory()->getPosition();
+			Point* c1 = person->getTrajectory()->getPosition();
 			Point* color = person->getColor();
 
 			// Find the closest PersonCluster in the current iteration		
@@ -317,12 +317,12 @@ int main (int argc, char** argv)
 			std::vector<pcl::people::PersonCluster<PointT> >::iterator closest;
 			closestColor->x = -1; closestColor->y = -1; closestColor->z = -1;		
 			for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {				
-				Eigen::Vector3f& p2 = cIter->getTCenter();	
-				float dist = (p1->x-p2(0))*(p1->x-p2(0)) + (p1->y-p2(1))*(p1->y-p2(1)) + (p1->z-p2(2))*(p1->z-p2(2));				
+				Eigen::Vector3f& c2 = cIter->getTCenter();	
+				float dist = (c1->x-c2(0))*(c1->x-c2(0)) + (c1->y-c2(1))*(c1->y-c2(1)) + (c1->z-c2(2))*(c1->z-c2(2));				
 				if (dist < minDist) {
 					minDist = dist;
 					closest = cIter;
-					calcAvgColor(cloud, &(*closest), closestColor);
+					calcAvgColor(cloud, &(*closest), closestColor);				
 				}
 			}
 		
@@ -340,16 +340,9 @@ int main (int argc, char** argv)
 				// Remove the matched PersonCluster from the vector of PersonClusters
 				clusters.erase(closest);
 				//std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;
-				person->setFrames(0);
+				//person->setFrames(0);
 				++pIter; 			
 			}
-			//else if (person->getTrajectory()->getPosition()->x > && person->getTrajectory()->getPosition()->x < ) {
-				//++pIter;
-			//}
-			//else if (person->getFrames() < NUM_FRAMES) {
-				//person->setFrames(person->getFrames() + 1);				
-				//++pIter;
-			//}
 			else if (Macros::onKinectBoundary(person->getTrajectory()->getPosition())){	
 				// Handle people leaving the Kinect's range
 				// Remove unmatched Persons from people and move them to finishedTracking
