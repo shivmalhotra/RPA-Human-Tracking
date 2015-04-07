@@ -115,8 +115,8 @@ void calcAvgColor (pcl::PointCloud<PointT>::Ptr cloud, pcl::people::PersonCluste
 
       h_avg += color->x;
 			s_avg += color->y;
-			v_avg += color->z;      
-    		
+			v_avg += color->z;    
+      
     	total++;
     }
 

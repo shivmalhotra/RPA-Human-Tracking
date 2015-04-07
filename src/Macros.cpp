@@ -21,6 +21,7 @@ void Macros::RGBtoHSV( float r, float g, float b, Point* color)
 	max = std::max( r, std::max(g, b) );
 	color->z = max;				// v
 	delta = max - min;
+	
 	if( max != 0 )
 		color->y = delta / max;		// s
 	else {
@@ -29,7 +30,10 @@ void Macros::RGBtoHSV( float r, float g, float b, Point* color)
 		color->x = -1;
 		return;
 	}
-	if( r == max )
+
+	if(delta != 0){ // if delta == 0 then r,g,b all have same value so h,s = 0
+	
+	if( r == max ) 
 		color->x = ( g - b ) / delta;		// between yellow & magenta
 	else if( g == max )
 		color->x = 2 + ( b - r ) / delta;	// between cyan & yellow
@@ -38,6 +42,15 @@ void Macros::RGBtoHSV( float r, float g, float b, Point* color)
 	color->x *= 60;				// degrees
 	if( color->x < 0 )
 		color->x += 360;
+	
+	} else {
+		std::cout << "r: "<< r * 255 << std::endl;
+		std::cout << "g: "<< g * 255 << std::endl;
+		std::cout << "b: "<< b * 255 << std::endl;
+		std::cout << "v: "<< color->z << std::endl;
+		color->x = 0;
+		color->y = 0;
+	}
 }
 
 void Macros::calcVelocity (float delta_time, Point* posBefore, Point* posAfter, Point* vel) 
