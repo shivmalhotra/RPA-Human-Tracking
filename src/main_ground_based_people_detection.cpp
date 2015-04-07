@@ -337,10 +337,12 @@ int main (int argc, char** argv)
 				Eigen::Vector3f& center = closest->getTCenter();
 				person->getTrajectory()->addPosition(center(0), center(1), center(2));
 				person->setHSVColor(closestColor->x, closestColor->y, closestColor->z);
-				myfile.open("data.txt", std::ios_base::app);
-				myfile << "Person: " << person->getID() << " x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
-				myfile << "Color: " << person->getID() << " h: " << closestColor->x << " s: " << closestColor->y << " v: " << closestColor->z <<std::endl;
-				myfile.close();	
+				
+        Macros::printInfo(person);
+        //myfile.open("data.txt", std::ios_base::app);
+				//myfile << "Person: " << person->getID() << " x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
+				//myfile << "Color: " << person->getID() << " h: " << closestColor->x << " s: " << closestColor->y << " v: " << closestColor->z <<std::endl;
+				//myfile.close();	
 				// Remove the matched PersonCluster from the vector of PersonClusters
 				clusters.erase(closest);
 				//std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;

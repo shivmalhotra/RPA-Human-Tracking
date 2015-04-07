@@ -3,7 +3,7 @@
 //
 //  Created by Samantha Chen on 3/22/2015
 
-
+#include "Person.h"
 #include "Macros.h"
 #include <algorithm>
 #include <math.h>
@@ -44,10 +44,6 @@ void Macros::RGBtoHSV( float r, float g, float b, Point* color)
 		color->x += 360;
 	
 	} else {
-		std::cout << "r: "<< r * 255 << std::endl;
-		std::cout << "g: "<< g * 255 << std::endl;
-		std::cout << "b: "<< b * 255 << std::endl;
-		std::cout << "v: "<< color->z << std::endl;
 		color->x = 0;
 		color->y = 0;
 	}
@@ -94,4 +90,23 @@ bool Macros::onKinectBoundary (float x, float y, float z) {
 
 bool Macros::onKinectBoundary(Point* p) {
 	return Macros::onKinectBoundary(p->x,p->y,p->z);
+}
+
+void Macros::printInfo(Person* p){
+	ofstream myfile;
+	myfile.open("data.txt", std::ios_base::app);
+	
+	myfile << "Person: " << p->getID() 
+	<< " x: " << p->getTrajectory()->getPosition()->x 
+	<< " y: " << p->getTrajectory()->getPosition()->y 
+	<< " z: " << p->getTrajectory()->getPosition()->z 
+	<<std::endl;
+	
+	myfile
+	<< " h: " << p->getColor()->x 
+	<< " s: " << p->getColor()->y 
+	<< " v: " << p->getColor()->z 
+	<<std::endl;
+	
+	myfile.close();
 }
