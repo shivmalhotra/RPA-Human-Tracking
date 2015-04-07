@@ -8,11 +8,11 @@ Completed Tasks
 - helper function to convert rgb color to hsv color - sam, shiv
 - get label maker to label kinects
 - ask for a third kinect
+- fix helper function that computes color of each person - shiv
 
 Assigned Tasks
 - video recording and compression - sagar
 - recording info to file and editing condition of main loop - shiv
-- fix helper function that computes color of each person - shiv
 - continue working on matching people - sam
 - look into iterative closest point algorithm - sam
 
