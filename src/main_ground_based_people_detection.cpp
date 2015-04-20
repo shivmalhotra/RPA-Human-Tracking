@@ -57,6 +57,9 @@
 #include "Macros.h"
 #include <iostream>
 #include <fstream>
+#include <signal.h>
+ #include <ctime>
+
 
 typedef pcl::PointXYZRGBA PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
@@ -71,6 +74,7 @@ enum { COLS = 640, ROWS = 480 };
 
 std::vector<Person*>* people;
 std::vector<Person*>* finishedTracking;
+
 
 int print_help()
 {
@@ -128,6 +132,75 @@ void calcAvgColor (pcl::PointCloud<PointT>::Ptr cloud, pcl::people::PersonCluste
     color->y = s_avg;
     color->z = v_avg;
 }
+
+// Define the function to be called when ctrl-c (SIGINT) signal is sent to process
+
+void signal_callback_handler(int sig)
+{
+  
+  ofstream myfile;
+  
+  for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
+  { 
+    myfile.open("data.txt", std::ios_base::app);
+
+    Person *person = *pIter;
+
+    myfile << "   Person ID: " << person->getID() << endl
+    << " Color: " << "(" << person->getColor()->x << "," 
+      << person->getColor()->y << "," 
+      << person->getColor()->z <<  ")" 
+    <<std::endl;
+
+    std::vector<Point*>* positions = person->getTrajectory()->getPositions();
+
+    unsigned int c = 1;
+    for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
+    {
+      Point* p = *itr;
+      myfile << "Position " << c << ": " 
+      << "(" << p->x << "," 
+      << p->y << "," 
+      << p->z <<  ")" 
+      <<std::endl;
+
+      c++;
+    }
+
+    std::vector<Point*>* velocities = person->getTrajectory()->getVelocities();
+
+    c = 1;
+    for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
+    {
+      Point* p = *itr;
+      myfile << "Velocity " << c << ": " 
+      << "(" << p->x << "," 
+      << p->y << "," 
+      << p->z <<  ")" 
+      <<std::endl;
+
+      c++;
+    }
+    
+    myfile.close();
+  }
+
+  myfile.open("data.txt", std::ios_base::app);
+
+  time_t now = time(0);
+   
+  char* dt = ctime(&now);
+  myfile <<  "-------------------------" << endl;
+  myfile <<  "Timestamp: " << dt << endl;
+  myfile <<  "-------------------------";
+  
+  myfile.close();
+ 
+  printf("\n Exited succesffuly \n");
+
+  exit(sig);
+}
+
 
 int main (int argc, char** argv)
 {
@@ -248,9 +321,14 @@ int main (int argc, char** argv)
 	finishedTracking = new std::vector<Person*>();	
 	Point* closestColor = new Point();	
 
-  // Main loop:
+
+
+// Main loop:
   while (!viewer.wasStopped())
   {
+
+   signal(SIGINT, signal_callback_handler);
+
     if (new_cloud_available_flag && cloud_mutex.try_lock ())    // if a new cloud is available
     {
       new_cloud_available_flag = false;
@@ -338,11 +416,8 @@ int main (int argc, char** argv)
 				person->getTrajectory()->addPosition(center(0), center(1), center(2));
 				person->setHSVColor(closestColor->x, closestColor->y, closestColor->z);
 				
-        Macros::printInfo(person);
-        //myfile.open("data.txt", std::ios_base::app);
-				//myfile << "Person: " << person->getID() << " x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
-				//myfile << "Color: " << person->getID() << " h: " << closestColor->x << " s: " << closestColor->y << " v: " << closestColor->z <<std::endl;
-				//myfile.close();	
+       // Macros::printInfo(person);
+        
 				// Remove the matched PersonCluster from the vector of PersonClusters
 				clusters.erase(closest);
 				//std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;
@@ -360,11 +435,8 @@ int main (int argc, char** argv)
 				++pIter;
 			}
 			
-		}
-
-		//myfile.open("data.txt", std::ios_base::app);
-		//myfile << " " <<std::endl;
-		//myfile.close();
+		  
+    }
 
 		// Handle new people entering the Kinect's range
 		// For each unmatched PersonCluster, add a new Person to people

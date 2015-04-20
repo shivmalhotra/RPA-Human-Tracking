@@ -63,6 +63,11 @@ public:
      * @return The position.
      */
     Point*   getPosition(int t)           {		return positions->at(t);		}
+
+
+    std::vector<Point*>* getPositions() {return positions;}
+
+    std::vector<Point*>* getVelocities() {return velocities;}
     
     /**
      * Adds a position to the trajectory.
