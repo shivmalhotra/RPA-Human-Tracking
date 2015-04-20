@@ -58,7 +58,7 @@
 #include <iostream>
 #include <fstream>
 #include <signal.h>
- #include <ctime>
+#include <ctime>
 
 
 typedef pcl::PointXYZRGBA PointT;
@@ -139,6 +139,18 @@ void signal_callback_handler(int sig)
 {
   
   ofstream myfile;
+
+  myfile.open("data.txt", std::ios_base::app);
+
+  time_t now = time(0);
+   
+  char* dt = ctime(&now);
+  myfile <<  "-------------------------";
+  myfile <<  "\nTimestamp: " << dt;
+  myfile <<  "-------------------------\n";
+  
+  myfile.close();
+
   
   for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
   { 
@@ -147,7 +159,7 @@ void signal_callback_handler(int sig)
     Person *person = *pIter;
 
     myfile << "   Person ID: " << person->getID() << endl
-    << " Color: " << "(" << person->getColor()->x << "," 
+    << "Color: " << "(" << person->getColor()->x << "," 
       << person->getColor()->y << "," 
       << person->getColor()->z <<  ")" 
     <<std::endl;
@@ -185,18 +197,7 @@ void signal_callback_handler(int sig)
     myfile.close();
   }
 
-  myfile.open("data.txt", std::ios_base::app);
-
-  time_t now = time(0);
-   
-  char* dt = ctime(&now);
-  myfile <<  "-------------------------" << endl;
-  myfile <<  "Timestamp: " << dt << endl;
-  myfile <<  "-------------------------";
-  
-  myfile.close();
- 
-  printf("\n Exited succesffuly \n");
+  printf("\nExited succesffuly \n");
 
   exit(sig);
 }

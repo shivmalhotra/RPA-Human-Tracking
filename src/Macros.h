@@ -40,6 +40,8 @@
 // To use M_PI
 #define _USE_MATH_DEFINES
 
+#include <string>
+
 struct Point {
   float x;
   float y;
@@ -71,7 +73,7 @@ public:
 	*/
 	static bool onKinectBoundary(Point* p);
 
-	static void printInfo(Person* p);
+	// static void printInfo(Person* p);
 };
 
 #endif

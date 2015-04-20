@@ -92,21 +92,21 @@ bool Macros::onKinectBoundary(Point* p) {
 	return Macros::onKinectBoundary(p->x,p->y,p->z);
 }
 
-void Macros::printInfo(Person* p){
-	ofstream myfile;
-	myfile.open("data.txt", std::ios_base::app);
+// void Macros::printInfo(Person* p){
+// 	ofstream myfile;
+// 	myfile.open(filename, std::ios_base::app);
 	
-	myfile << "Person: " << p->getID() 
-	<< " x: " << p->getTrajectory()->getPosition()->x 
-	<< " y: " << p->getTrajectory()->getPosition()->y 
-	<< " z: " << p->getTrajectory()->getPosition()->z 
-	<<std::endl;
+// 	myfile << "Person: " << p->getID() 
+// 	<< " x: " << p->getTrajectory()->getPosition()->x 
+// 	<< " y: " << p->getTrajectory()->getPosition()->y 
+// 	<< " z: " << p->getTrajectory()->getPosition()->z 
+// 	<<std::endl;
 	
-	myfile
-	<< " h: " << p->getColor()->x 
-	<< " s: " << p->getColor()->y 
-	<< " v: " << p->getColor()->z 
-	<<std::endl;
+// 	myfile
+// 	<< " h: " << p->getColor()->x 
+// 	<< " s: " << p->getColor()->y 
+// 	<< " v: " << p->getColor()->z 
+// 	<<std::endl;
 	
-	myfile.close();
-}
+// 	myfile.close();
+// }
