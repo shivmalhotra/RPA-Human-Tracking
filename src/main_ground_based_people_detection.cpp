@@ -57,6 +57,9 @@
 #include "Macros.h"
 #include <iostream>
 #include <fstream>
+#include <signal.h>
+#include <ctime>
+
 
 typedef pcl::PointXYZRGBA PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
@@ -71,6 +74,7 @@ enum { COLS = 640, ROWS = 480 };
 
 std::vector<Person*>* people;
 std::vector<Person*>* finishedTracking;
+
 
 int print_help()
 {
@@ -123,7 +127,6 @@ void calcAvgColor (pcl::PointCloud<PointT>::Ptr cloud, pcl::people::PersonCluste
     color->z = v_avg;
 }
 
-
 void draw (PointCloudT::Ptr cloud) {
     if (viewer->wasStopped()) {
         return;
@@ -149,6 +152,75 @@ void drawWithBoxes (PointCloudT::Ptr cloud, std::vector<pcl::people::PersonClust
         k++;
     }
     viewer->spinOnce();
+}
+
+// Define the function to be called when ctrl-c (SIGINT) signal is sent to process
+
+void signal_callback_handler(int sig)
+{
+  
+  ofstream myfile;
+
+  myfile.open("data.txt", std::ios_base::app);
+
+  time_t now = time(0);
+   
+  char* dt = ctime(&now);
+  myfile <<  "-------------------------";
+  myfile <<  "\nTimestamp: " << dt;
+  myfile <<  "-------------------------\n";
+  
+  myfile.close();
+
+  
+  for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
+  { 
+    myfile.open("data.txt", std::ios_base::app);
+
+    Person *person = *pIter;
+
+    myfile << "   Person ID: " << person->getID() << endl
+    << "Color: " << "(" << person->getColor()->x << "," 
+      << person->getColor()->y << "," 
+      << person->getColor()->z <<  ")" 
+    <<std::endl;
+
+    std::vector<Point*>* positions = person->getTrajectory()->getPositions();
+
+    unsigned int c = 1;
+    for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
+    {
+      Point* p = *itr;
+      myfile << "Position " << c << ": " 
+      << "(" << p->x << "," 
+      << p->y << "," 
+      << p->z <<  ")" 
+      <<std::endl;
+
+      c++;
+    }
+
+    std::vector<Point*>* velocities = person->getTrajectory()->getVelocities();
+
+    c = 1;
+    for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
+    {
+      Point* p = *itr;
+      myfile << "Velocity " << c << ": " 
+      << "(" << p->x << "," 
+      << p->y << "," 
+      << p->z <<  ")" 
+      <<std::endl;
+
+      c++;
+    }
+    
+    myfile.close();
+  }
+
+  printf("\nExited succesffuly \n");
+
+  exit(sig);
 }
 
 int main (int argc, char** argv) {
@@ -273,6 +345,7 @@ int main (int argc, char** argv) {
 
     // Main loop:
     while (!viewer->wasStopped()) {
+        signal(SIGINT, signal_callback_handler);   
         if (new_cloud_available_flag && cloud_mutex.try_lock ()) {   // if a new cloud is available
             new_cloud_available_flag = false;
             

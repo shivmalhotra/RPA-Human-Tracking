@@ -41,12 +41,15 @@
 
 
 
+#include <string>
+
 struct Point {
   float x;
   float y;
   float z;
 };
 
+class Person;
 
 class Macros{
 public:
@@ -70,6 +73,8 @@ public:
 	* Checks if point is close to the boundary of Kinect's range
 	*/
 	static bool onKinectBoundary(Point* p);
+
+	// static void printInfo(Person* p);
 };
 
 #endif
