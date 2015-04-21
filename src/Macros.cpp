@@ -33,21 +33,21 @@ void Macros::RGBtoHSV( float r, float g, float b, Point* color)
 
 	if(delta != 0){ // if delta == 0 then r,g,b all have same value so h,s = 0
 	
-	if( r == max ) 
-		color->x = ( g - b ) / delta;		// between yellow & magenta
-	else if( g == max )
-		color->x = 2 + ( b - r ) / delta;	// between cyan & yellow
-	else
-		color->x = 4 + ( r - g ) / delta;	// between magenta & cyan
-	color->x *= 60;				// degrees
-	if( color->x < 0 )
-		color->x += 360;
+		if( r == max ) 
+			color->x = ( g - b ) / delta;		// between yellow & magenta
+		else if( g == max )
+			color->x = 2 + ( b - r ) / delta;	// between cyan & yellow
+		else
+			color->x = 4 + ( r - g ) / delta;	// between magenta & cyan
+		color->x *= 60;				// degrees
+		if( color->x < 0 )
+			color->x += 360;
 	
 	} else {
-		std::cout << "r: "<< r * 255 << std::endl;
-		std::cout << "g: "<< g * 255 << std::endl;
-		std::cout << "b: "<< b * 255 << std::endl;
-		std::cout << "v: "<< color->z << std::endl;
+		//std::cout << "r: "<< r * 255 << std::endl;
+		//std::cout << "g: "<< g * 255 << std::endl;
+		//std::cout << "b: "<< b * 255 << std::endl;
+		//std::cout << "v: "<< color->z << std::endl;
 		color->x = 0;
 		color->y = 0;
 	}
@@ -61,10 +61,15 @@ void Macros::calcVelocity (float delta_time, Point* posBefore, Point* posAfter, 
 }
 
 bool Macros::onKinectBoundary (float x, float y, float z) {
-	// top and bottom boundaries	
-	if (z < KINECT_MIN_Z + BOUNDARY_DIST || z > KINECT_MAX_Z - BOUNDARY_DIST) {
+	// top boundary	
+	if (z < KINECT_MIN_Z + BOUNDARY_DIST) {
 		return true;
 	}
+    // bottom boundary	
+	//if (z > KINECT_MAX_Z - BOUNDARY_DIST) {
+		//return true;
+	//}
+
 	// left side boundary
 	float x0 = x;
 	float y0 = z;
@@ -74,7 +79,7 @@ bool Macros::onKinectBoundary (float x, float y, float z) {
 	float d = fabs(a * x0 + b * y0 + c) / sqrt(a*a + b*b);
 	//std::cout << d << std::endl;		
 
-	if (d < SIDE_BOUNDARY_DIST) {
+	if (d < LEFT_SIDE_BOUNDARY_DIST) {
 		return true;
 	}
 	
@@ -84,7 +89,7 @@ bool Macros::onKinectBoundary (float x, float y, float z) {
 	//std::cout << d << std::endl;		
 	//std::cout << " " << std::endl;
 	
-	if (d < SIDE_BOUNDARY_DIST) {
+	if (d < RIGHT_SIDE_BOUNDARY_DIST) {
 		return true;
 	}
 	else {

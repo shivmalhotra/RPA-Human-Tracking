@@ -6,15 +6,19 @@
 #ifndef __Macros__
 #define __Macros__
 
+// Visualization
+#define DRAW true
+#define DRAW_BOXES true
+
+
 // Default values for people detector
 #define DEFAULT_SVM_PATH "data/trainedLinearSVMForPeopleDetectionWithHOG.yaml"
-#define DEFAULT_MIN_CONFIDENCE -1.5f
-#define DEFAULT_MIN_HEIGHT 1.1f //1.3;
-#define DEFAULT_MAX_HEIGHT 2.6f //2.3;
-#define DEFAULT_VOXEL_SIZE 0.06f
-
-// Number of previous frames to check
-#define NUM_FRAMES 2
+#define DEFAULT_MIN_CONFIDENCE -2.5f
+#define DEFAULT_MIN_HEIGHT 0.5f //1.3;
+#define DEFAULT_MAX_HEIGHT 2.5f //2.3;
+#define DEFAULT_MIN_WIDTH 0.1f
+#define DEFAULT_MAX_WIDTH 2.0f
+#define DEFAULT_VOXEL_SIZE 0.15f //0.06f
 
 // Kinect for Windows Specs
 #define HORIZONTAL_FOV 57.0f
@@ -23,22 +27,19 @@
 #define KINECT_MAX_Z 4.0f
 
 // Boundary Values
-#define BOUNDARY_ANGLE 10.0f
-#define BOUNDARY_DIST 0.3f
-#define SIDE_BOUNDARY_DIST 0.2f
-
-// Maximum distance to still be matched 
-#define DIST_RANGE 2.0f
-
-// HSV color ranges
-#define COLOR_MATCHING_ON true
-#define H_RANGE 30.0f
-#define S_RANGE 0.1f
-#define V_RANGE 0.1f
-
+#define BOUNDARY_DIST 0.2f
+#define LEFT_SIDE_BOUNDARY_DIST 0.2f
+#define RIGHT_SIDE_BOUNDARY_DIST 0.2f
 
 // To use M_PI
 #define _USE_MATH_DEFINES
+
+// Number of previous frames to check
+#define NUM_FRAMES 2
+// HSV color ranges
+#define COLOR_MATCHING_ON true
+
+
 
 struct Point {
   float x;
