@@ -345,7 +345,10 @@ int main (int argc, char** argv) {
 
     // Main loop:
     while (!viewer->wasStopped()) {
-        signal(SIGINT, signal_callback_handler);   
+
+        //signal to print all info upon termination of program
+        signal(SIGINT, signal_callback_handler);
+
         if (new_cloud_available_flag && cloud_mutex.try_lock ()) {   // if a new cloud is available
             new_cloud_available_flag = false;
             
@@ -464,14 +467,6 @@ int main (int argc, char** argv) {
                     person->getTrajectory()->addVelocity(velX, velY, velZ);				    
                     person->setHSVColor(closestColor->x, closestColor->y, closestColor->z);
                                         
-				    myfile.open("data.txt", std::ios_base::app);
-				    myfile << "Person: " << person->getID() << " x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
-				    myfile << "Color: " << person->getID() << " h: " << closestColor->x << " s: " << closestColor->y << " v: " << closestColor->z <<std::endl;
-                    myfile << "Velocity: " << person->getID() << " x: " << velX << " y: " << velY << " z: " << velZ <<std::endl;
-                    
-                    myfile << " " <<std::endl;
-				    myfile.close();	
-
 				    // Remove the matched PersonCluster from the vector of PersonClusters
 				    clusters.erase(closest);
 				    //std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;
@@ -492,11 +487,18 @@ int main (int argc, char** argv) {
 		    // For each unmatched PersonCluster, add a new Person to people
 		    for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {				
 			    Eigen::Vector3f& center = cIter->getTCenter(); 			
-		        Person* person = new Person();
+		        
+                Person* person = new Person();
 			    person->getTrajectory()->addPosition(center(0),center(1),center(2));
-			    calcAvgColor(cloud, &(*cIter), person->getColor());
+			   
+                Point* color = new Point();
+                //  calcAvgColor(cloud, &(*cIter), person->getColor());
+                calcAvgColor(cloud, &(*cIter), color);
+                person->getTrajectory()->addColor(color);
+
 			    people->push_back(person);
-			    std::cout << "CREATED PERSON" << std::endl;
+			    
+                std::cout << "CREATED PERSON" << std::endl;
 		    }
 		    static double previousFrame = pcl::getTime ();
 		    cloud_mutex.unlock ();
@@ -505,5 +507,3 @@ int main (int argc, char** argv) {
 
     return 0;
 }
-
-

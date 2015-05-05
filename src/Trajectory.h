@@ -24,6 +24,8 @@ private:
     /** Velocities in the trajectory */
 	std::vector<Point*>* velocities;
  
+    /** Colors over time*/
+    std::vector<Point*>* colors;
 
 public:
     /**
@@ -68,6 +70,8 @@ public:
     std::vector<Point*>* getPositions() {return positions;}
 
     std::vector<Point*>* getVelocities() {return velocities;}
+
+    std::vector<Point*>* getColors() {return colors;}
     
     /**
      * Adds a position to the trajectory.
@@ -82,6 +86,8 @@ public:
      * @return The velocity.
      */
     void   addVelocity(float x, float y, float z);
+
+    void   addColor(Point* p);
     
    
 };

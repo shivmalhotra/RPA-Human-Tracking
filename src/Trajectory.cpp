@@ -14,6 +14,7 @@
 Trajectory::Trajectory() {
     positions = new std::vector<Point*>();
 	velocities = new std::vector<Point*>();
+	colors = new std::vector<Point*>();
 }
 
 
@@ -23,6 +24,7 @@ Trajectory::Trajectory() {
 Trajectory::~Trajectory() {
     delete[] positions;
 	delete[] velocities;
+	delete[] colors;
 }
 
 /**
@@ -51,3 +53,6 @@ void Trajectory::addVelocity(float x, float y, float z) {
 	velocities->push_back(p);    
 }
 
+void Trajectory::addColor(Point* p) {	
+	colors->push_back(p)  
+}
