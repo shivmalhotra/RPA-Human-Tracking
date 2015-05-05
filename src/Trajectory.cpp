@@ -54,5 +54,5 @@ void Trajectory::addVelocity(float x, float y, float z) {
 }
 
 void Trajectory::addColor(Point* p) {	
-	colors->push_back(p)  
+	colors->push_back(p);  
 }

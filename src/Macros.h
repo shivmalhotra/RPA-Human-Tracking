@@ -13,10 +13,10 @@
 
 // Default values for people detector
 #define DEFAULT_SVM_PATH "data/trainedLinearSVMForPeopleDetectionWithHOG.yaml"
-#define DEFAULT_MIN_CONFIDENCE -2.5f
+#define DEFAULT_MIN_CONFIDENCE -1.5f //-3.5f
 #define DEFAULT_MIN_HEIGHT 0.5f //1.3;
-#define DEFAULT_MAX_HEIGHT 2.5f //2.3;
-#define DEFAULT_MIN_WIDTH 0.1f
+#define DEFAULT_MAX_HEIGHT 2.3f //2.3;
+#define DEFAULT_MIN_WIDTH 0.3f
 #define DEFAULT_MAX_WIDTH 2.0f
 #define DEFAULT_VOXEL_SIZE 0.15f //0.06f
 
