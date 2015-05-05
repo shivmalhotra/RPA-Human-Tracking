@@ -160,6 +160,49 @@ void signal_callback_handler(int sig)
 {
   
   ofstream myfile;
+  
+  for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
+  { 
+    myfile.open("data.txt", std::ios_base::app);
+
+    Person *person = *pIter;
+
+    myfile << "person " << person->getID() << endl;
+    
+    std::vector<Point*>* positions = person->getTrajectory()->getPositions();
+
+    unsigned int c = 1;
+    for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
+    {
+      Point* p = *itr;
+      myfile << "p " << p->x << " " << p->y << " " << p->z <<std::endl;
+
+      c++;
+    }
+
+    std::vector<Point*>* velocities = person->getTrajectory()->getVelocities();
+
+    c = 1;
+    for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
+    {
+      Point* p = *itr;
+      myfile << "v " << p->x << " " << p->y << " " << p->z <<std::endl;
+
+      c++;
+    }
+    
+    myfile.close();
+  }
+
+  printf("\nExited succesffuly \n");
+
+  exit(sig);
+}
+/*
+void signal_callback_handler(int sig)
+{
+  
+  ofstream myfile;
 
   myfile.open("data.txt", std::ios_base::app);
 
@@ -222,7 +265,7 @@ void signal_callback_handler(int sig)
 
   exit(sig);
 }
-
+*/
 int main (int argc, char** argv) {
     if(pcl::console::find_switch (argc, argv, "--help") || pcl::console::find_switch (argc, argv, "-h"))
         return print_help();
@@ -341,6 +384,7 @@ int main (int argc, char** argv) {
 	people = new std::vector<Person*>();
 	finishedTracking = new std::vector<Person*>();	
 	Point* closestColor = new Point();	
+    Point* color2 = new Point();
     ofstream myfile;
 
     // Main loop:
@@ -349,7 +393,7 @@ int main (int argc, char** argv) {
         if (new_cloud_available_flag && cloud_mutex.try_lock ()) {   // if a new cloud is available
             new_cloud_available_flag = false;
             
-            double now = pcl::getTime ();//sw.getTime ();
+            double now = pcl::getTime();
             double deltaTime = now - previousFrame;
             // Display average framerate:
             if (++count == 30) {
@@ -401,20 +445,26 @@ int main (int argc, char** argv) {
                 }
             }*/
             unsigned int k = 0;
-            for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end(); ++it) { 			
-                it->drawTBoundingBox(*viewer, k);
-                k++;				    
+            for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end();) { 			
+                if(it->getPersonConfidence() > min_confidence) {                
+                    it->drawTBoundingBox(*viewer, k);
+                    k++;
+                    ++it;
+                    //std::cout << "PASSED" << it->getPersonConfidence() << std::endl;
+                }
+                else {                    
+				    it = clusters.erase(it);
+                    //std::cout << "FAILED" << it->getPersonConfidence() << std::endl;
+			    }
             }
             viewer->spinOnce();
-          
-		    //std::cout << "Before clusters: " << clusters.size() << std::endl;
-		    //std::cout << "persons: " << people->size() << std::endl;
+   
 
 
             // Match the PersonClusters in the current iteration to the people from the previous iteration
 		    for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();) {			
 			    Person* person = (*pIter);
-			    Point* pos1 = person->getTrajectory()->getPosition();
+                Point* pos1 = person->getTrajectory()->getPosition();
 			    Point* color1 = person->getColor();
 
 			    // Find the closest PersonCluster in the current iteration		
@@ -425,7 +475,7 @@ int main (int argc, char** argv) {
  	 
                 float weights [6] = { 1.0,1.0,1.0,0.1,0.5,0.3 };
 			    for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {					    
-                    Eigen::Vector3f& pos2 = cIter->getTCenter();	
+                    Eigen::Vector3f& pos2 = cIter->getTCenter();	                   
                     calcAvgColor(cloud, &(*cIter), color2);				    
                     float distX = fabs(pos1->x - pos2(0)); 
                     float distY = fabs(pos1->y - pos2(1));
@@ -436,9 +486,9 @@ int main (int argc, char** argv) {
                     float distSq = distX * distX + distY * distY + distZ * distZ;
                     float score = weights[0]*distSq + weights[3]*distH + weights[4]*distS + weights[5]*distV;                     
 				    
+                    //std::cout << "Person: " << person->getID() << "     " << score <<  std::endl;
                     //std::cout << "Dist  " << distSq << "   " << distY  <<  "  " << distZ <<  std::endl;
                     //std::cout << "Color  " << distH << "   " << distS  <<  "  " << distV <<  std::endl;
-                    //std::cout << "Person: " << person->getID() << "     " << score <<  std::endl;
                     //std::cout << " " <<  std::endl;
 
 				    if (score < minScore) {
@@ -464,11 +514,11 @@ int main (int argc, char** argv) {
                     person->getTrajectory()->addVelocity(velX, velY, velZ);				    
                     person->setHSVColor(closestColor->x, closestColor->y, closestColor->z);
                                         
-				    myfile.open("data.txt", std::ios_base::app);
-				    myfile << "Person: " << person->getID() << " x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
-				    myfile << "Color: " << person->getID() << " h: " << closestColor->x << " s: " << closestColor->y << " v: " << closestColor->z <<std::endl;
-                    myfile << "Velocity: " << person->getID() << " x: " << velX << " y: " << velY << " z: " << velZ <<std::endl;
-                    
+				    myfile.open("data2.txt", std::ios_base::app);
+				    myfile << "Person: " << person->getID() <<std::endl;
+                    myfile << "Position  x: " << center(0) << " y: " << center(1) << " z: " << center(2) <<std::endl;
+				    myfile << "Color  h: " << closestColor->x << " s: " << closestColor->y << " v: " << closestColor->z <<std::endl;
+                    myfile << "Velocity  x: " << velX << " y: " << velY << " z: " << velZ <<std::endl;
                     myfile << " " <<std::endl;
 				    myfile.close();	
 
@@ -507,3 +557,4 @@ int main (int argc, char** argv) {
 }
 
 
+			   
