@@ -6,7 +6,7 @@
 //
 
 #include "Trajectory.h"
-
+int Trajectory::nextID = 0;
 
 /**
  * Creates a new trajectory
@@ -15,6 +15,8 @@ Trajectory::Trajectory() {
     positions = new std::vector<Point*>();
 	velocities = new std::vector<Point*>();
 	colors = new std::vector<Point*>();
+	color = new Point();
+	id = Trajectory::nextID++;
 }
 
 
@@ -25,6 +27,7 @@ Trajectory::~Trajectory() {
     delete[] positions;
 	delete[] velocities;
 	delete[] colors;
+	delete color;
 }
 
 /**
@@ -55,4 +58,14 @@ void Trajectory::addVelocity(float x, float y, float z) {
 
 void Trajectory::addColor(Point* p) {	
 	colors->push_back(p);  
+}
+
+void Trajectory::setHSVColor(float h, float s, float v) {
+	color->x = h;
+	color->y = s;
+	color->z = v; 
+}
+
+void Trajectory::setRGBColor(float r, float g, float b) {
+	Macros::RGBtoHSV(r,g,b,color);
 }

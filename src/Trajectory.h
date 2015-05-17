@@ -27,7 +27,23 @@ private:
     /** Colors over time*/
     std::vector<Point*>* colors;
 
+    /** Average HSV color of the person */
+    Point* color;
+
+    /** The ID of the person */
+    int id;
+
 public:
+    /** The ID to assign to the next person */
+    static int nextID;
+
+     /**
+     * Returns the person's ID.
+     *
+     * @return The ID.
+     */
+    int   getID()           {   return id;      }
+
     /**
      * Creates a new empty trajectory
      */
@@ -89,6 +105,9 @@ public:
 
     void   addColor(Point* p);
     
+    Point* getColor() { return color; }
+    void setHSVColor(float h, float s, float v);
+    void setRGBColor(float r, float g, float b);
    
 };
 

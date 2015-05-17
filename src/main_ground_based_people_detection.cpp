@@ -53,7 +53,7 @@
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/people/ground_based_people_detection_app.h>
 #include "Trajectory.h"
-#include "Person.h"
+//#include "Person.h"
 #include "Macros.h"
 #include <iostream>
 #include <fstream>
@@ -72,8 +72,8 @@ boost::mutex cloud_mutex;
 
 enum { COLS = 640, ROWS = 480 };
 
-std::vector<Person*>* people;
-std::vector<Person*>* finishedTracking;
+std::vector<Trajectory*>* people;
+std::vector<Trajectory*>* finishedTracking;
 
 
 int print_help()
@@ -161,15 +161,15 @@ void signal_callback_handler(int sig)
   
   ofstream myfile;
   
-  for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
+  for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
   { 
     myfile.open("data.txt", std::ios_base::app);
 
-    Person *person = *pIter;
+    Trajectory *person = *pIter;
 
     myfile << "person " << person->getID() << endl;
     
-    std::vector<Point*>* positions = person->getTrajectory()->getPositions();
+    std::vector<Point*>* positions = person->getPositions();
 
     unsigned int c = 1;
     for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
@@ -180,7 +180,7 @@ void signal_callback_handler(int sig)
       c++;
     }
 
-    std::vector<Point*>* velocities = person->getTrajectory()->getVelocities();
+    std::vector<Point*>* velocities = person->getVelocities();
 
     c = 1;
     for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
@@ -381,8 +381,8 @@ int main (int argc, char** argv) {
     static unsigned count = 0;
     static double last = pcl::getTime (); //sw.getTime ();
     static double previousFrame = pcl::getTime ();
-	people = new std::vector<Person*>();
-	finishedTracking = new std::vector<Person*>();	
+	people = new std::vector<Trajectory*>();
+	finishedTracking = new std::vector<Trajectory*>();	
 	Point* closestColor = new Point();	
     Point* color2 = new Point();
     ofstream myfile;
@@ -465,9 +465,9 @@ int main (int argc, char** argv) {
 
 
             // Match the PersonClusters in the current iteration to the people from the previous iteration
-		    for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();) {			
-			    Person* person = (*pIter);
-                Point* pos1 = person->getTrajectory()->getPosition();
+		    for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();) {			
+			    Trajectory* person = (*pIter);
+                Point* pos1 = person->getPosition();
 			    Point* color1 = person->getColor();
 
 			    // Find the closest PersonCluster in the current iteration		
@@ -508,13 +508,13 @@ int main (int argc, char** argv) {
 			    if (minScore < scoreThreshold) {	
 				    // Update the data of the person			
 				    Eigen::Vector3f& center = closest->getTCenter();
-                    Point* previousPos = person->getTrajectory()->getPosition();
+                    Point* previousPos = person->getPosition();
                     float velX = (center(0) - previousPos->x) / deltaTime;
                     float velY = (center(1) - previousPos->y) / deltaTime;
                     float velZ = (center(2) - previousPos->z) / deltaTime;
 				    
-                    person->getTrajectory()->addPosition(center(0), center(1), center(2));
-                    person->getTrajectory()->addVelocity(velX, velY, velZ);				    
+                    person->addPosition(center(0), center(1), center(2));
+                    person->addVelocity(velX, velY, velZ);				    
                     person->setHSVColor(closestColor->x, closestColor->y, closestColor->z);
                                         
 
@@ -523,7 +523,7 @@ int main (int argc, char** argv) {
 				    //std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;
 				    ++pIter; 			
 			    }
-			    else if (Macros::onKinectBoundary(person->getTrajectory()->getPosition())){	
+			    else if (Macros::onKinectBoundary(person->getPosition())){	
 				    // Handle people leaving the Kinect's range
 				    // Remove unmatched Persons from people and move them to finishedTracking
 				    pIter = people->erase(pIter);
@@ -539,15 +539,15 @@ int main (int argc, char** argv) {
 		    for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {				
 			    Eigen::Vector3f& center = cIter->getTCenter(); 			
 		        
-                Person* person = new Person();
-			    person->getTrajectory()->addPosition(center(0),center(1),center(2));
+                Trajectory* person = new Trajectory();
+			          person->addPosition(center(0),center(1),center(2));
 			   
                 Point* color = new Point();
                 //  calcAvgColor(cloud, &(*cIter), person->getColor());
                 calcAvgColor(cloud, &(*cIter), color);
-                person->getTrajectory()->addColor(color);
+                person->addColor(color);
 
-			    people->push_back(person);
+			          people->push_back(person);
 			    
                 std::cout << "CREATED PERSON" << std::endl;
 		    }
