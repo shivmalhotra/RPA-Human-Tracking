@@ -18,97 +18,49 @@
  */
 class Trajectory {
 private:
-    /** Positions in the trajectory */
-    std::vector<Point*>* positions;
 
-    /** Velocities in the trajectory */
-	std::vector<Point*>* velocities;
- 
-    /** Colors over time*/
+    int id;
+    std::vector<Point*>* positions;
+	  std::vector<Point*>* velocities;
     std::vector<Point*>* colors;
+    std::vector<float>* times;
 
     /** Average HSV color of the person */
     Point* color;
-
-    /** The ID of the person */
-    int id;
 
 public:
     /** The ID to assign to the next person */
     static int nextID;
 
-     /**
-     * Returns the person's ID.
-     *
-     * @return The ID.
-     */
-    int   getID()           {   return id;      }
-
-    /**
-     * Creates a new empty trajectory
-     */
     Trajectory();
-    
-    /**
-     * Disposes the trajectory, releasing all resources.
-     */
     ~Trajectory();
 
-	 /**
-     * Returns the velocity at the specified timestep.
-     *
-     * @return The velocity.
-     */
-    Point*   getVelocity()           {		return velocities->at(velocities->size()-1);     }
-    
-	/**
-     * Returns the position at the specified timestep.
-     *
-     * @return The position.
-     */
-    Point*   getPosition()           {		return positions->at(positions->size()-1);		}
-    
-    /**
-     * Returns the velocity at the specified timestep.
-     *
-     * @return The velocity.
-     */
-    Point*   getVelocity(int t)           {		return velocities->at(t);     }
-    
-	/**
-     * Returns the position at the specified timestep.
-     *
-     * @return The position.
-     */
-    Point*   getPosition(int t)           {		return positions->at(t);		}
+    int getID() { return id; }
 
+    Point* getPosition() { return positions->at(positions->size()-1); }
+    Point* getVelocity() { return velocities->at(velocities->size()-1); }
+    Point* getColor() { return colors->at(colors->size()-1); }
+    float getTime() { return times->at(times->size()-1); }
 
-    std::vector<Point*>* getPositions() {return positions;}
+    Point* getVelocity(int t) {	return velocities->at(t); }
+    Point* getPosition(int t) {	return positions->at(t); }
+    Point* getColor(int t) { return colors->at(t); }
+    float getTime(int t) { return times->at(t); }
 
-    std::vector<Point*>* getVelocities() {return velocities;}
+    std::vector<Point*>* getPositions() { return positions; }
+    std::vector<Point*>* getVelocities() { return velocities; }
+    std::vector<Point*>* getColors() { return colors; }
+    std::vector<float>* getTimes() { return times; }
 
-    std::vector<Point*>* getColors() {return colors;}
-    
-    /**
-     * Adds a position to the trajectory.
-     *
-     * @param value The position.
-     */
-    void    addPosition(float x, float y, float z);
-    
-    /**
-     * Adds a velocity to the trajectory.
-     *
-     * @return The velocity.
-     */
-    void   addVelocity(float x, float y, float z);
+    void addPosition(float x, float y, float z);
+    void addVelocity(float x, float y, float z);
+    void addColor(float h, float s, float b);
+    void addTime(float t) { times->push_back(t); }
 
-    void   addColor(Point* p);
-    
-    Point* getColor() { return color; }
-    void setHSVColor(float h, float s, float v);
-    void setRGBColor(float r, float g, float b);
-   
+    void addPosition(Point* p) { positions->push_back(p); }
+    void addVelocity(Point* p) { velocities->push_back(p); }
+    void addColor(Point* p)  { colors->push_back(p); }
+  
 };
 
 

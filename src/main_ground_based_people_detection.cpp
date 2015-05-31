@@ -160,112 +160,47 @@ void signal_callback_handler(int sig)
 {
   
   ofstream myfile;
-  
+  myfile.open("data.txt", std::ios_base::app);  
+
   for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
   { 
-    myfile.open("data.txt", std::ios_base::app);
-
     Trajectory *person = *pIter;
 
     myfile << "person " << person->getID() << endl;
     
     std::vector<Point*>* positions = person->getPositions();
-
-    unsigned int c = 1;
-    for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
-    {
-      Point* p = *itr;
-      myfile << "p " << p->x << " " << p->y << " " << p->z <<std::endl;
-
-      c++;
-    }
-
     std::vector<Point*>* velocities = person->getVelocities();
+    std::vector<Point*>* colors = person->getColors();
+    std::vector<float>* times = person->getTimes();
 
-    c = 1;
-    for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
-    {
-      Point* p = *itr;
-      myfile << "v " << p->x << " " << p->y << " " << p->z <<std::endl;
-
-      c++;
-    }
-    
-    myfile.close();
-  }
-
-  printf("\nExited succesffuly \n");
-
-  exit(sig);
-}
-/*
-void signal_callback_handler(int sig)
-{
-  
-  ofstream myfile;
-
-  myfile.open("data.txt", std::ios_base::app);
-
-  time_t now = time(0);
-   
-  char* dt = ctime(&now);
-  myfile <<  "-------------------------";
-  myfile <<  "\nTimestamp: " << dt;
-  myfile <<  "-------------------------\n";
-  
-  myfile.close();
-
-  
-  for (std::vector<Person*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
-  { 
-    myfile.open("data.txt", std::ios_base::app);
-
-    Person *person = *pIter;
-
-    myfile << "   Person ID: " << person->getID() << endl
-    << "Color: " << "(" << person->getColor()->x << "," 
-      << person->getColor()->y << "," 
-      << person->getColor()->z <<  ")" 
-    <<std::endl;
-
-    std::vector<Point*>* positions = person->getTrajectory()->getPositions();
-
-    unsigned int c = 1;
     for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
     {
-      Point* p = *itr;
-      myfile << "Position " << c << ": " 
-      << "(" << p->x << "," 
-      << p->y << "," 
-      << p->z <<  ")" 
-      <<std::endl;
-
-      c++;
+      Point* pos = *itr;
+      myfile << "p " << pos->x << " " << pos->y << " " << pos->z <<std::endl;
     }
-
-    std::vector<Point*>* velocities = person->getTrajectory()->getVelocities();
-
-    c = 1;
     for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
     {
-      Point* p = *itr;
-      myfile << "Velocity " << c << ": " 
-      << "(" << p->x << "," 
-      << p->y << "," 
-      << p->z <<  ")" 
-      <<std::endl;
-
-      c++;
+      Point* vel = *itr;
+      myfile << "v " << vel->x << " " << vel->y << " " << vel->z <<std::endl;
     }
-    
-    myfile.close();
+    for(std::vector<Point*>::iterator itr = colors->begin(); itr != colors->end(); itr++)
+    {
+      Point* col = *itr;
+      myfile << "c " << col->x << " " << col->y << " " << col->z <<std::endl;
+    }
+    for(std::vector<float>::iterator itr = times->begin(); itr != times->end(); itr++)
+    {
+      float time = *itr;
+      myfile << "t " << time <<std::endl;
+    }
   }
 
-  printf("\nExited succesffuly \n");
+  myfile.close();
+  printf("\nExited successfully \n");
 
   exit(sig);
 }
-*/
+
 int main (int argc, char** argv) {
     if(pcl::console::find_switch (argc, argv, "--help") || pcl::console::find_switch (argc, argv, "-h"))
         return print_help();
@@ -383,8 +318,8 @@ int main (int argc, char** argv) {
     static double previousFrame = pcl::getTime ();
 	people = new std::vector<Trajectory*>();
 	finishedTracking = new std::vector<Trajectory*>();	
-	Point* closestColor = new Point();	
     Point* color2 = new Point();
+    Point* closestColor = new Point();
     ofstream myfile;
 
     // Main loop:
@@ -473,8 +408,7 @@ int main (int argc, char** argv) {
 			    // Find the closest PersonCluster in the current iteration		
 			    float minScore = std::numeric_limits<float>::max();
 			    std::vector<pcl::people::PersonCluster<PointT> >::iterator closest;
-                Point* closestColor = new Point();
-                Point* color2 = new Point();
+
  	 
                 float weights [6] = { 1.0,1.0,1.0,0.1,0.5,0.3 };
 			    for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {					    
@@ -515,7 +449,7 @@ int main (int argc, char** argv) {
 				    
                     person->addPosition(center(0), center(1), center(2));
                     person->addVelocity(velX, velY, velZ);				    
-                    person->setHSVColor(closestColor->x, closestColor->y, closestColor->z);
+                    person->addColor(closestColor->x, closestColor->y, closestColor->z);
                                         
 
 				    // Remove the matched PersonCluster from the vector of PersonClusters
@@ -540,14 +474,13 @@ int main (int argc, char** argv) {
 			    Eigen::Vector3f& center = cIter->getTCenter(); 			
 		        
                 Trajectory* person = new Trajectory();
-			          person->addPosition(center(0),center(1),center(2));
+			    person->addPosition(center(0),center(1),center(2));
 			   
                 Point* color = new Point();
-                //  calcAvgColor(cloud, &(*cIter), person->getColor());
                 calcAvgColor(cloud, &(*cIter), color);
                 person->addColor(color);
 
-			          people->push_back(person);
+			    people->push_back(person);
 			    
                 std::cout << "CREATED PERSON" << std::endl;
 		    }
