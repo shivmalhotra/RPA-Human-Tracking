@@ -18,6 +18,7 @@ Trajectory::Trajectory() {
   times = new std::vector<float>();
 	color = new Point();
 	id = Trajectory::nextID++;
+  isPerson = true;
 }
 
 /**

@@ -10,15 +10,16 @@
 #define DRAW true
 #define DRAW_BOXES true
 
+#define OBSTACLE_MIN_CONFIDENCE -2.7f
 
 // Default values for people detector
 #define DEFAULT_SVM_PATH "data/trainedLinearSVMForPeopleDetectionWithHOG.yaml"
-#define DEFAULT_MIN_CONFIDENCE -1.5f //-3.5f
-#define DEFAULT_MIN_HEIGHT 0.5f //1.3;
-#define DEFAULT_MAX_HEIGHT 2.3f //2.3;
-#define DEFAULT_MIN_WIDTH 0.3f
+#define DEFAULT_MIN_CONFIDENCE -0.6f //-3.5f
+#define DEFAULT_MIN_HEIGHT 0.4f //1.3;
+#define DEFAULT_MAX_HEIGHT 2.7f //2.3;
+#define DEFAULT_MIN_WIDTH 0.2f
 #define DEFAULT_MAX_WIDTH 2.0f
-#define DEFAULT_VOXEL_SIZE 0.15f //0.06f
+#define DEFAULT_VOXEL_SIZE 0.1f //0.06f
 
 // Kinect for Windows Specs
 #define HORIZONTAL_FOV 57.0f

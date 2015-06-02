@@ -31,6 +31,7 @@ private:
 public:
     /** The ID to assign to the next person */
     static int nextID;
+    bool isPerson;
 
     Trajectory();
     ~Trajectory();

@@ -59,6 +59,7 @@
 #include <fstream>
 #include <signal.h>
 #include <ctime>
+#include <pcl/filters/statistical_outlier_removal.h>
 
 
 typedef pcl::PointXYZRGBA PointT;
@@ -66,6 +67,7 @@ typedef pcl::PointCloud<PointT> PointCloudT;
 
 // PCL viewer //
 pcl::visualization::PCLVisualizer* viewer;
+//pcl::visualization::PCLVisualizer* obsViewer;
 
 // Mutex: //
 boost::mutex cloud_mutex;
@@ -159,46 +161,55 @@ void drawWithBoxes (PointCloudT::Ptr cloud, std::vector<pcl::people::PersonClust
 void signal_callback_handler(int sig)
 {
   
-  ofstream myfile;
-  myfile.open("data.txt", std::ios_base::app);  
+    ofstream myfile;
+    myfile.open("data.txt", std::ios_base::app);  
 
-  for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
-  { 
-    Trajectory *person = *pIter;
+    for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
+    { 
+        Trajectory *person = *pIter;
 
-    myfile << "person " << person->getID() << endl;
-    
-    std::vector<Point*>* positions = person->getPositions();
-    std::vector<Point*>* velocities = person->getVelocities();
-    std::vector<Point*>* colors = person->getColors();
-    std::vector<float>* times = person->getTimes();
+        myfile << "person " << person->getID() << endl;
 
-    for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
-    {
-      Point* pos = *itr;
-      myfile << "p " << pos->x << " " << pos->y << " " << pos->z <<std::endl;
+        if (person->isPerson) {
+            myfile << "human" << endl;
+        }
+        else {
+            myfile << "obstacle" << endl;
+        }
+        
+        std::vector<Point*>* positions = person->getPositions();
+        std::vector<Point*>* velocities = person->getVelocities();
+        std::vector<Point*>* colors = person->getColors();
+        std::vector<float>* times = person->getTimes();
+
+        for(std::vector<Point*>::iterator itr = positions->begin(); itr != positions->end(); itr++)
+        {
+            Point* pos = *itr;
+            myfile << "p " << pos->x << " " << pos->z << " " << pos->y <<std::endl;
+        }
+        for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
+        {
+            Point* vel = *itr;
+            myfile << "v " << vel->x << " " << vel->z << " " << vel->y <<std::endl;
+        }
+        myfile << "v " << 0.0f << " " << 0.0f << " " << 0.0f <<std::endl;
+        for(std::vector<Point*>::iterator itr = colors->begin(); itr != colors->end(); itr++)
+        {
+            Point* col = *itr;
+            myfile << "c " << col->x << " " << col->y << " " << col->z <<std::endl;
+        }
+        for(std::vector<float>::iterator itr = times->begin(); itr != times->end(); itr++)
+        {
+            float time = *itr;
+            myfile << "t " << time <<std::endl;
+        }
+        myfile << "end" << std::endl;
     }
-    for(std::vector<Point*>::iterator itr = velocities->begin(); itr != velocities->end(); itr++)
-    {
-      Point* vel = *itr;
-      myfile << "v " << vel->x << " " << vel->y << " " << vel->z <<std::endl;
-    }
-    for(std::vector<Point*>::iterator itr = colors->begin(); itr != colors->end(); itr++)
-    {
-      Point* col = *itr;
-      myfile << "c " << col->x << " " << col->y << " " << col->z <<std::endl;
-    }
-    for(std::vector<float>::iterator itr = times->begin(); itr != times->end(); itr++)
-    {
-      float time = *itr;
-      myfile << "t " << time <<std::endl;
-    }
-  }
 
-  myfile.close();
-  printf("\nExited successfully \n");
+    myfile.close();
+    printf("\nExited successfully \n");
 
-  exit(sig);
+    exit(sig);
 }
 
 int main (int argc, char** argv) {
@@ -309,18 +320,23 @@ int main (int argc, char** argv) {
     people_detector.setIntrinsics(rgb_intrinsics_matrix);            // set RGB camera intrinsic parameters
     people_detector.setClassifier(person_classifier);                // set person classifier
     //people_detector.setHeightLimits(min_height, max_height);         // set person classifier
-	people_detector.setPersonClusterLimits(min_height, max_height, min_width, max_width);
+	  people_detector.setPersonClusterLimits(min_height, max_height, min_width, max_width);
     //  people_detector.setSensorPortraitOrientation(true);             // set sensor orientation to vertical
 
     // For timing:
     static unsigned count = 0;
     static double last = pcl::getTime (); //sw.getTime ();
     static double previousFrame = pcl::getTime ();
-	people = new std::vector<Trajectory*>();
-	finishedTracking = new std::vector<Trajectory*>();	
+	  people = new std::vector<Trajectory*>();
+	  finishedTracking = new std::vector<Trajectory*>();	
     Point* color2 = new Point();
     Point* closestColor = new Point();
     ofstream myfile;
+    double startTime = pcl::getTime();
+    std::vector<bool>* isClusterPerson = new std::vector<bool>();
+
+    //obsViewer = new pcl::visualization::PCLVisualizer("PCL Viewer2");   
+    //obsViewer->setCameraPosition(0,0,-2,0,-1,0,0);
 
     // Main loop:
     while (!viewer->wasStopped()) {
@@ -339,6 +355,13 @@ int main (int argc, char** argv) {
                 count = 0;
                 last = now;
             }
+
+
+            //pcl::StatisticalOutlierRemoval<PointT> sorfilter (false); // 
+            //sorfilter.setInputCloud (cloud);
+            //sorfilter.setMeanK (8);
+            //sorfilter.setStddevMulThresh (1.0);
+            //sorfilter.filter (*cloud);
 
             // Perform people detection on the new cloud:
             std::vector<pcl::people::PersonCluster<PointT> > clusters;   // vector containing persons clusters
@@ -382,107 +405,123 @@ int main (int argc, char** argv) {
                     std::cout << "ON BOUNDARY" <<  std::endl;
                 }
             }*/
-            unsigned int k = 0;
-            for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end();) { 			
-                if(it->getPersonConfidence() > min_confidence) {                
-                    it->drawTBoundingBox(*viewer, k);
-                    k++;
-                    ++it;
-                    //std::cout << "PASSED" << it->getPersonConfidence() << std::endl;
-                }
-                else {                    
-				    it = clusters.erase(it);
-                    //std::cout << "FAILED" << it->getPersonConfidence() << std::endl;
-			    }
+        //obsViewer->removeAllPointClouds();
+        //obsViewer->removeAllShapes();
+        //obsViewer->addPointCloud<PointT> (cloud, rgb, "input_cloud");
+        isClusterPerson->clear();
+        unsigned int k = 0;
+        for(std::vector<pcl::people::PersonCluster<PointT> >::iterator it = clusters.begin(); it != clusters.end();) { 			
+            if(it->getPersonConfidence() > DEFAULT_MIN_CONFIDENCE) {                
+                it->drawTBoundingBox(*viewer, k);
+                k++;
+                //isClusterPerson->push_back(true);
+                
+                std::cout << "PASSED " << it->getPersonConfidence() << std::endl;
+                ++it;
             }
-            viewer->spinOnce();
+            /*else if (it->getPersonConfidence() > OBSTACLE_MIN_CONFIDENCE) {                    
+		            isClusterPerson->push_back(false);
+                //it->drawTBoundingBox(*viewer, k);
+                //std::cout << "FAILED" << it->getPersonConfidence() << std::endl;
+                ++it;
+	          }*/
+            else {
+                it = clusters.erase(it);
+            }
+        }
+        viewer->spinOnce();
+        //obsViewer->spinOnce();
    
-
-
             // Match the PersonClusters in the current iteration to the people from the previous iteration
 		    for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();) {			
-			    Trajectory* person = (*pIter);
-                Point* pos1 = person->getPosition();
-			    Point* color1 = person->getColor();
+			      Trajectory* person = (*pIter);
+            Point* pos1 = person->getPosition();
+			      Point* color1 = person->getColor();
 
-			    // Find the closest PersonCluster in the current iteration		
-			    float minScore = std::numeric_limits<float>::max();
-			    std::vector<pcl::people::PersonCluster<PointT> >::iterator closest;
+			      // Find the closest PersonCluster in the current iteration		
+			      float minScore = std::numeric_limits<float>::max();
+			      std::vector<pcl::people::PersonCluster<PointT> >::iterator closest;
+	 
+            float weights [6] = { 1.0,1.0,1.0,0.1,0.5,0.3 };
+			      for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {
+                /*if ((person->isPerson && !isClusterPerson->at(cIter-clusters.begin())) || (!person->isPerson && isClusterPerson->at(cIter-clusters.begin()))){
+                    continue;
+                }*/
+                Eigen::Vector3f& pos2 = cIter->getTCenter();	                   
+                calcAvgColor(cloud, &(*cIter), color2);				    
+                float distX = fabs(pos1->x - pos2(0)); 
+                float distY = fabs(pos1->y - pos2(1));
+                float distZ = fabs(pos1->z - pos2(2));
+                float distH = fabs(color1->x - color2->x);
+                float distS = fabs(color1->y - color2->y);
+                float distV = fabs(color1->z - color2->z);
+                float distSq = distX * distX + distY * distY + distZ * distZ;
+                float score = weights[0]*distSq;// + weights[3]*distH + weights[4]*distS + weights[5]*distV;                     
+		    
+                //std::cout << "Person: " << person->getID() << "     " << score <<  std::endl;
+                //std::cout << "Dist  " << distSq << "   " << distX << "   " << distY  <<  "  " << distZ <<  std::endl;
+                //std::cout << "Color  " << distH << "   " << distS  <<  "   " << distV <<  std::endl;
+                
 
- 	 
-                float weights [6] = { 1.0,1.0,1.0,0.1,0.5,0.3 };
-			    for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {					    
-                    Eigen::Vector3f& pos2 = cIter->getTCenter();	                   
-                    calcAvgColor(cloud, &(*cIter), color2);				    
-                    float distX = fabs(pos1->x - pos2(0)); 
-                    float distY = fabs(pos1->y - pos2(1));
-                    float distZ = fabs(pos1->z - pos2(2));
-                    float distH = fabs(color1->x - color2->x);
-                    float distS = fabs(color1->y - color2->y);
-                    float distV = fabs(color1->z - color2->z);
-                    float distSq = distX * distX + distY * distY + distZ * distZ;
-                    float score = weights[0]*distSq + weights[3]*distH + weights[4]*distS + weights[5]*distV;                     
-				    
-                    //std::cout << "Person: " << person->getID() << "     " << score <<  std::endl;
-                    //std::cout << "Dist  " << distSq << "   " << distY  <<  "  " << distZ <<  std::endl;
-                    //std::cout << "Color  " << distH << "   " << distS  <<  "  " << distV <<  std::endl;
-                    //std::cout << " " <<  std::endl;
-
-				    if (score < minScore) {
-					    minScore = score;
-					    closest = cIter;
-					    closestColor->x = color2->x;
-                        closestColor->y = color2->y;
-                        closestColor->z = color2->z;
-				    }
-			    }
+				        if (score < minScore) {
+					          minScore = score;
+					          closest = cIter;
+					          closestColor->x = color2->x;
+                    closestColor->y = color2->y;
+                    closestColor->z = color2->z;
+				        }
+			      }
+            //std::cout << minScore <<  std::endl;
 		        
-                float scoreThreshold = 5.0f;
-			    // If distance is small and colors are close, match the PersonCluster
-			    if (minScore < scoreThreshold) {	
-				    // Update the data of the person			
-				    Eigen::Vector3f& center = closest->getTCenter();
-                    Point* previousPos = person->getPosition();
-                    float velX = (center(0) - previousPos->x) / deltaTime;
-                    float velY = (center(1) - previousPos->y) / deltaTime;
-                    float velZ = (center(2) - previousPos->z) / deltaTime;
-				    
-                    person->addPosition(center(0), center(1), center(2));
-                    person->addVelocity(velX, velY, velZ);				    
-                    person->addColor(closestColor->x, closestColor->y, closestColor->z);
-                                        
+            float scoreThreshold = 1.0f; //5.0f;
+			      // If distance is small and colors are close, match the PersonCluster
+			      if (minScore < scoreThreshold) {	
+				        // Update the data of the person			
+				        Eigen::Vector3f& center = closest->getTCenter();
+                Point* previousPos = person->getPosition();
+                float velX = (center(0) - previousPos->x) / deltaTime;
+                float velY = (center(1) - previousPos->y) / deltaTime;
+                float velZ = (center(2) - previousPos->z) / deltaTime;
+		    
+                person->addPosition(center(0), center(1), center(2));
+                person->addVelocity(velX, velY, velZ);				    
+                person->addColor(closestColor->x, closestColor->y, closestColor->z);
+                person->addTime(now-startTime);                    
 
-				    // Remove the matched PersonCluster from the vector of PersonClusters
-				    clusters.erase(closest);
-				    //std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;
-				    ++pIter; 			
-			    }
-			    else if (Macros::onKinectBoundary(person->getPosition())){	
-				    // Handle people leaving the Kinect's range
-				    // Remove unmatched Persons from people and move them to finishedTracking
-				    pIter = people->erase(pIter);
-				    std::cout << "LEFT" << std::endl;				
-			    }
-			    else {
-				    ++pIter;
-			    }
-			
+			          // Remove the matched PersonCluster from the vector of PersonClusters
+			          clusters.erase(closest);
+			          //std::cout << "MATCHED   clusters remaining: " << clusters.size() << std::endl;
+			          ++pIter; 			
+			      }
+			      else if (Macros::onKinectBoundary(person->getPosition())){	
+			          // Handle people leaving the Kinect's range
+			          // Remove unmatched Persons from people and move them to finishedTracking
+			          pIter = people->erase(pIter);
+			          //std::cout << "LEFT" << std::endl;				
+		        }
+			      else {
+				        ++pIter;
+			      }
 		    }
 
 		    // For each unmatched PersonCluster, add a new Person to people
 		    for (std::vector<pcl::people::PersonCluster<PointT> >::iterator cIter = clusters.begin(); cIter != clusters.end(); ++cIter) {				
-			    Eigen::Vector3f& center = cIter->getTCenter(); 			
-		        
-                Trajectory* person = new Trajectory();
-			    person->addPosition(center(0),center(1),center(2));
-			   
-                Point* color = new Point();
-                calcAvgColor(cloud, &(*cIter), color);
-                person->addColor(color);
+			      Eigen::Vector3f& center = cIter->getTCenter(); 			
+            Trajectory* person = new Trajectory();
+			      person->addPosition(center(0),center(1),center(2));		   
+            Point* color = new Point();
+            calcAvgColor(cloud, &(*cIter), color);
+            person->addColor(color);
+            person->addTime(now-startTime);
+            /*if (isClusterPerson->at(cIter-clusters.begin())) {
+                person->isPerson = true;
+            }
+            else {
+                person->isPerson = false;
+            }*/
 
-			    people->push_back(person);
-			    
-                std::cout << "CREATED PERSON" << std::endl;
+			      people->push_back(person);
+            //std::cout << "CREATED PERSON" << std::endl;
 		    }
 		    static double previousFrame = pcl::getTime ();
 		    cloud_mutex.unlock ();
