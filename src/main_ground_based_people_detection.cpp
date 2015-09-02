@@ -60,6 +60,8 @@
 #include <signal.h>
 #include <ctime>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/io/pcd_io.h>
+#include <sstream>
 
 
 typedef pcl::PointXYZRGBA PointT;
@@ -162,7 +164,7 @@ void signal_callback_handler(int sig)
 {
   
     ofstream myfile;
-    myfile.open("data.txt", std::ios_base::app);  
+    myfile.open("data.txt");  
 
     for (std::vector<Trajectory*>::iterator pIter = people->begin(); pIter != people->end();pIter++)
     { 
@@ -338,6 +340,8 @@ int main (int argc, char** argv) {
     //obsViewer = new pcl::visualization::PCLVisualizer("PCL Viewer2");   
     //obsViewer->setCameraPosition(0,0,-2,0,-1,0,0);
 
+    int pcd_count = 0;
+
     // Main loop:
     while (!viewer->wasStopped()) {
 
@@ -346,6 +350,11 @@ int main (int argc, char** argv) {
 
         if (new_cloud_available_flag && cloud_mutex.try_lock ()) {   // if a new cloud is available
             new_cloud_available_flag = false;
+
+            std::stringstream ss;
+            ss << "pcd_" << ++pcd_count << ".pcd";
+            
+            pcl::io::savePCDFile( ss.str() , *cloud);
             
             double now = pcl::getTime();
             double deltaTime = now - previousFrame;
@@ -416,7 +425,8 @@ int main (int argc, char** argv) {
                 k++;
                 //isClusterPerson->push_back(true);
                 
-                std::cout << "PASSED " << it->getPersonConfidence() << std::endl;
+                std::cout << "PASSED " << it->getPersonConfidence() << "Tcenter: " << it->getTCenter() 
+                << "Center: " << it->getCenter() << std::endl;
                 ++it;
             }
             /*else if (it->getPersonConfidence() > OBSTACLE_MIN_CONFIDENCE) {                    
